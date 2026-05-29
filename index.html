@@ -49,6 +49,10 @@
               <span>Friction <strong data-value-for="friction"></strong></span>
               <input id="friction" type="range" min="400" max="6000" step="100" />
             </label>
+            <label class="control">
+              <span>Turn accel <strong data-value-for="turnAcceleration"></strong></span>
+              <input id="turnAcceleration" type="range" min="1000" max="7000" step="100" />
+            </label>
           </section>
 
           <section>
@@ -62,6 +66,22 @@
             <label class="control">
               <span>Gravity <strong data-value-for="gravity"></strong></span>
               <input id="gravity" type="range" min="900" max="3200" step="50" />
+            </label>
+            <label class="control">
+              <span>Jump cut <strong data-value-for="jumpCutMultiplier"></strong></span>
+              <input id="jumpCutMultiplier" type="range" min="1" max="4" step="0.05" />
+            </label>
+            <label class="control">
+              <span>Fall gravity <strong data-value-for="fallGravityMultiplier"></strong></span>
+              <input id="fallGravityMultiplier" type="range" min="1" max="4" step="0.05" />
+            </label>
+            <label class="control">
+              <span>Max fall speed <strong data-value-for="maxFallSpeed"></strong></span>
+              <input id="maxFallSpeed" type="range" min="500" max="1800" step="25" />
+            </label>
+            <label class="control">
+              <span>Air control <strong data-value-for="airControl"></strong></span>
+              <input id="airControl" type="range" min="0.15" max="1" step="0.05" />
             </label>
             <label class="control">
               <span>Coyote time <strong data-value-for="coyoteTime"></strong></span>
@@ -82,6 +102,18 @@
               <input id="dashForce" type="range" min="250" max="1100" step="10" />
             </label>
             <label class="control">
+              <span>Dash duration <strong data-value-for="dashDuration"></strong></span>
+              <input id="dashDuration" type="range" min="60" max="360" step="10" />
+            </label>
+            <label class="control">
+              <span>Dash cooldown <strong data-value-for="dashCooldown"></strong></span>
+              <input id="dashCooldown" type="range" min="150" max="1000" step="10" />
+            </label>
+            <label class="control">
+              <span>Air dashes <strong data-value-for="airDashCount"></strong></span>
+              <input id="airDashCount" type="range" min="0" max="3" step="1" />
+            </label>
+            <label class="control">
               <span>Hit stop <strong data-value-for="hitStop"></strong></span>
               <input id="hitStop" type="range" min="0" max="180" step="10" />
             </label>
@@ -89,12 +121,23 @@
               <span>Shake <strong data-value-for="shake"></strong></span>
               <input id="shake" type="range" min="0" max="20" step="1" />
             </label>
+            <label class="control">
+              <span>Landing impact <strong data-value-for="landingImpact"></strong></span>
+              <input id="landingImpact" type="range" min="0" max="20" step="1" />
+            </label>
           </section>
         </aside>
 
         <section class="stage-column">
           <div class="canvas-wrap">
             <canvas id="stage" width="960" height="540" aria-label="Interactive movement sandbox"></canvas>
+            <div class="touch-controls" aria-label="Touch controls">
+              <button data-hold="left" type="button">Left</button>
+              <button data-hold="right" type="button">Right</button>
+              <button data-action="jump" type="button">Jump</button>
+              <button data-action="dash" type="button">Dash</button>
+              <button data-action="hit" type="button">Hit</button>
+            </div>
           </div>
 
           <div class="stats-row">
@@ -111,9 +154,16 @@
               <strong id="dashStat">0 px</strong>
             </div>
             <div class="stat">
-              <span>Feel score</span>
-              <strong id="feelStat">0</strong>
+              <span>Intensity</span>
+              <strong id="intensityStat">0</strong>
             </div>
+          </div>
+          <div class="profile-row" aria-label="Feel profile metrics">
+            <div><span>Speed</span><meter id="speedMeter" min="0" max="100"></meter></div>
+            <div><span>Precision</span><meter id="precisionMeter" min="0" max="100"></meter></div>
+            <div><span>Float</span><meter id="floatMeter" min="0" max="100"></meter></div>
+            <div><span>Impact</span><meter id="impactMeter" min="0" max="100"></meter></div>
+            <div><span>Access</span><meter id="accessibilityMeter" min="0" max="100"></meter></div>
           </div>
         </section>
 
@@ -164,8 +214,8 @@
                 <dd id="compareDash">0 px</dd>
               </div>
               <div>
-                <dt>Score</dt>
-                <dd id="compareScore">0</dd>
+                <dt>Intensity</dt>
+                <dd id="compareIntensity">0</dd>
               </div>
             </dl>
           </section>

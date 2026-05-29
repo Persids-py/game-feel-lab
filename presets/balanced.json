@@ -1,20 +1,29 @@
 {
-  "name": "balanced",
+  "schemaVersion": "1.1",
+  "profileName": "balanced",
   "movement": {
     "runSpeed": 420,
     "acceleration": 2600,
-    "friction": 3200
+    "friction": 3200,
+    "turnAcceleration": 4200
   },
   "air": {
     "jumpVelocity": 720,
     "gravity": 1850,
+    "jumpCutMultiplier": 2.2,
+    "fallGravityMultiplier": 1.65,
+    "maxFallSpeed": 980,
+    "airControl": 0.72,
     "coyoteTime": 90,
     "jumpBuffer": 100
   },
   "impact": {
     "dashForce": 620,
+    "dashDuration": 150,
+    "dashCooldown": 420,
+    "airDashCount": 1,
     "hitStop": 70,
-    "shake": 8
+    "shake": 8,
+    "landingImpact": 7
   }
 }
-

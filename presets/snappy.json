@@ -1,20 +1,29 @@
 {
-  "name": "snappy",
+  "schemaVersion": "1.1",
+  "profileName": "snappy",
   "movement": {
     "runSpeed": 560,
     "acceleration": 4200,
-    "friction": 5000
+    "friction": 5000,
+    "turnAcceleration": 6400
   },
   "air": {
     "jumpVelocity": 840,
     "gravity": 2600,
+    "jumpCutMultiplier": 3.1,
+    "fallGravityMultiplier": 2.35,
+    "maxFallSpeed": 1350,
+    "airControl": 0.62,
     "coyoteTime": 60,
     "jumpBuffer": 70
   },
   "impact": {
     "dashForce": 860,
+    "dashDuration": 120,
+    "dashCooldown": 330,
+    "airDashCount": 1,
     "hitStop": 45,
-    "shake": 13
+    "shake": 13,
+    "landingImpact": 9
   }
 }
-

@@ -6,7 +6,8 @@ import {
   encodeProfile,
   estimateJump,
   exportConfig,
-  feelScore,
+  feelProfileMetrics,
+  intensityScore,
   parseImportedConfig,
   presets,
   renderEngineSnippet,
@@ -34,7 +35,7 @@ function holdFrames(player, input, config, frames = 1) {
 {
   const player = createPlayer();
 
-  stepFrames(player, { jumpPressed: true }, presets.balanced, 2);
+  stepFrames(player, { jumpPressed: true, jumpHeld: true }, presets.balanced, 2);
 
   assert.equal(player.grounded, false);
   assert.ok(player.vy < 0, "jump input should launch the player upward");
@@ -69,19 +70,24 @@ function holdFrames(player, input, config, frames = 1) {
 
 {
   const jump = estimateJump(presets.balanced);
+  const shortHop = estimateJump(presets.balanced, 378, { jumpHoldTime: 0 });
 
   assert.ok(jump.apexHeight > 0);
   assert.ok(jump.airTime > 0.1);
   assert.ok(jump.points.length > 4);
+  assert.ok(shortHop.apexHeight < jump.apexHeight, "released jump should create a shorter hop");
 }
 
 {
   const exported = exportConfig(presets.snappy);
 
-  assert.equal(exported.name, "custom-feel-profile");
+  assert.equal(exported.schemaVersion, "1.1");
+  assert.equal(exported.profileName, "custom-feel-profile");
   assert.equal(exported.movement.runSpeed, presets.snappy.runSpeed);
   assert.equal(exported.air.gravity, presets.snappy.gravity);
+  assert.equal(exported.air.fallGravityMultiplier, presets.snappy.fallGravityMultiplier);
   assert.equal(exported.impact.shake, presets.snappy.shake);
+  assert.equal(exported.impact.dashDuration, presets.snappy.dashDuration);
 }
 
 {
@@ -103,7 +109,7 @@ function holdFrames(player, input, config, frames = 1) {
   const diff = compareProfiles(presets.balanced, presets.snappy);
 
   assert.ok(diff.dashReach > 0);
-  assert.ok(Number.isInteger(diff.feelScore));
+  assert.ok(Number.isInteger(diff.intensity));
 }
 
 {
@@ -115,11 +121,54 @@ function holdFrames(player, input, config, frames = 1) {
 }
 
 {
-  const score = feelScore(presets.balanced);
+  const score = intensityScore(presets.balanced);
+  const metrics = feelProfileMetrics(presets.balanced);
 
   assert.ok(Number.isInteger(score));
   assert.ok(score >= 0);
   assert.ok(score <= 100);
+  assert.ok(metrics.speed >= 0 && metrics.speed <= 100);
+  assert.ok(metrics.accessibility >= 0 && metrics.accessibility <= 100);
+}
+
+{
+  const player = createPlayer();
+
+  stepFrames(player, { dashPressed: true }, presets.speedrun, 1);
+  assert.ok(player.dashRemaining > 0, "dash should last for a configured duration");
+  assert.ok(player.dashCooldown > 0, "dash cooldown should be configured in milliseconds");
+}
+
+{
+  const decoded = decodeProfile("rs=999999&gr=not-a-number&ad=2");
+
+  assert.equal(decoded.runSpeed, 720);
+  assert.equal(decoded.gravity, presets.balanced.gravity);
+  assert.equal(decoded.airDashCount, 2);
+}
+
+{
+  assert.throws(() => parseImportedConfig("{not valid json"));
+}
+
+{
+  const player = createPlayer();
+  player.grounded = false;
+  player.coyote = 0;
+
+  stepFrames(player, { jumpPressed: true, jumpHeld: true }, presets.balanced, 1);
+
+  assert.ok(player.vy >= 0, "jump should not fire after coyote time expires");
+}
+
+{
+  const player = createPlayer();
+  player.vy = 5000;
+  player.grounded = false;
+
+  stepFrames(player, {}, presets.balanced, 1);
+
+  assert.ok(player.vy <= presets.balanced.maxFallSpeed, "fall speed should be capped");
 }
 
 console.log("simulation tests ok");

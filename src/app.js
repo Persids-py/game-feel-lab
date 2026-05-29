@@ -5,7 +5,8 @@ import {
   decodeProfile,
   encodeProfile,
   estimateJump,
-  feelScore,
+  feelProfileMetrics,
+  intensityScore,
   normalizeConfig,
   parseImportedConfig,
   presets,
@@ -27,6 +28,7 @@ const subtitle = document.querySelector(".topbar p");
 const input = {
   left: false,
   right: false,
+  jumpHeld: false,
   jumpPressed: false,
   dashPressed: false,
   hitPressed: false,
@@ -100,12 +102,14 @@ document.querySelector("#importBtn").addEventListener("click", () => {
 document.querySelector("#saveABtn").addEventListener("click", () => {
   compareA = normalizeConfig(config);
   updateCompare();
+  drawArc();
   setStatus("Saved current profile as A");
 });
 
 document.querySelector("#saveBBtn").addEventListener("click", () => {
   compareB = normalizeConfig(config);
   updateCompare();
+  drawArc();
   setStatus("Saved current profile as B");
 });
 
@@ -123,7 +127,10 @@ window.addEventListener("keydown", (event) => {
   if (event.repeat) return;
   if (event.code === "KeyA" || event.code === "ArrowLeft") input.left = true;
   if (event.code === "KeyD" || event.code === "ArrowRight") input.right = true;
-  if (event.code === "Space") input.jumpPressed = true;
+  if (event.code === "Space") {
+    input.jumpPressed = true;
+    input.jumpHeld = true;
+  }
   if (event.code === "ShiftLeft" || event.code === "ShiftRight") input.dashPressed = true;
   if (event.code === "KeyJ") input.hitPressed = true;
 });
@@ -131,7 +138,32 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   if (event.code === "KeyA" || event.code === "ArrowLeft") input.left = false;
   if (event.code === "KeyD" || event.code === "ArrowRight") input.right = false;
+  if (event.code === "Space") input.jumpHeld = false;
 });
+
+for (const button of document.querySelectorAll(".touch-controls button")) {
+  const hold = button.dataset.hold;
+  const action = button.dataset.action;
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    button.setPointerCapture(event.pointerId);
+    if (hold) input[hold] = true;
+    if (action === "jump") {
+      input.jumpPressed = true;
+      input.jumpHeld = true;
+    }
+    if (action === "dash") input.dashPressed = true;
+    if (action === "hit") input.hitPressed = true;
+  });
+  button.addEventListener("pointerup", () => {
+    if (hold) input[hold] = false;
+    if (action === "jump") input.jumpHeld = false;
+  });
+  button.addEventListener("pointercancel", () => {
+    if (hold) input[hold] = false;
+    if (action === "jump") input.jumpHeld = false;
+  });
+}
 
 function applyConfig(nextConfig, presetLabel = "custom") {
   Object.assign(config, normalizeConfig(nextConfig));
@@ -276,8 +308,8 @@ function drawPlayer() {
 }
 
 function drawArc() {
-  const data = estimateJump(config);
-  const comparison = estimateJump(compareB);
+  const profileA = estimateJump(compareA);
+  const profileB = estimateJump(compareB);
   arcCtx.clearRect(0, 0, arc.width, arc.height);
   arcCtx.fillStyle = "#f6f8fb";
   arcCtx.fillRect(0, 0, arc.width, arc.height);
@@ -297,13 +329,13 @@ function drawArc() {
     arcCtx.stroke();
   }
 
-  drawArcLine(comparison.points, "rgba(248, 95, 85, 0.42)", 2);
-  drawArcLine(data.points, "#276ef1", 4);
+  drawArcLine(profileA.points, "#276ef1", 4);
+  drawArcLine(profileB.points, "rgba(248, 95, 85, 0.62)", 3);
 
   arcCtx.fillStyle = "#152336";
   arcCtx.font = "600 13px system-ui";
-  arcCtx.fillText(`${Math.round(data.apexHeight)} px apex`, 26, 24);
-  arcCtx.fillText(`${Math.round(data.airTime * 1000)} ms air`, 26, 44);
+  arcCtx.fillText(`A ${Math.round(profileA.apexHeight)} px`, 26, 24);
+  arcCtx.fillText(`B ${Math.round(profileB.apexHeight)} px`, 26, 44);
 }
 
 function drawArcLine(points, color, width) {
@@ -321,10 +353,16 @@ function drawArcLine(points, color, width) {
 
 function updateStats() {
   const jump = estimateJump(config);
+  const metrics = feelProfileMetrics(config);
   document.querySelector("#apexStat").textContent = `${Math.round(jump.apexHeight)} px`;
   document.querySelector("#airTimeStat").textContent = `${Math.round(jump.airTime * 1000)} ms`;
   document.querySelector("#dashStat").textContent = `${Math.round(player.dashDistance)} px`;
-  document.querySelector("#feelStat").textContent = feelScore(config);
+  document.querySelector("#intensityStat").textContent = intensityScore(config);
+  document.querySelector("#speedMeter").value = metrics.speed;
+  document.querySelector("#precisionMeter").value = metrics.precision;
+  document.querySelector("#floatMeter").value = metrics.float;
+  document.querySelector("#impactMeter").value = metrics.impact;
+  document.querySelector("#accessibilityMeter").value = metrics.accessibility;
 }
 
 function updateCompare() {
@@ -332,12 +370,23 @@ function updateCompare() {
   document.querySelector("#compareApex").textContent = signed(diff.apexHeight, " px");
   document.querySelector("#compareAir").textContent = signed(diff.airTime, " ms");
   document.querySelector("#compareDash").textContent = signed(diff.dashReach, " px");
-  document.querySelector("#compareScore").textContent = signed(diff.feelScore, "");
+  document.querySelector("#compareIntensity").textContent = signed(diff.intensity, "");
 }
 
 function formatValue(key, value) {
-  if (key === "coyoteTime" || key === "jumpBuffer" || key === "hitStop") return `${value} ms`;
+  if (
+    key === "coyoteTime" ||
+    key === "jumpBuffer" ||
+    key === "hitStop" ||
+    key === "dashDuration" ||
+    key === "dashCooldown"
+  ) {
+    return `${value} ms`;
+  }
   if (key === "shake") return `${value}px`;
+  if (key === "airControl" || key === "jumpCutMultiplier" || key === "fallGravityMultiplier") {
+    return Number(value).toFixed(2);
+  }
   return String(value);
 }
 

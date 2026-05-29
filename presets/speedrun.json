@@ -1,20 +1,29 @@
 {
-  "name": "speedrun",
+  "schemaVersion": "1.1",
+  "profileName": "speedrun",
   "movement": {
     "runSpeed": 690,
     "acceleration": 5000,
-    "friction": 5600
+    "friction": 5600,
+    "turnAcceleration": 7000
   },
   "air": {
     "jumpVelocity": 900,
     "gravity": 2850,
+    "jumpCutMultiplier": 2.8,
+    "fallGravityMultiplier": 2,
+    "maxFallSpeed": 1600,
+    "airControl": 0.76,
     "coyoteTime": 110,
     "jumpBuffer": 120
   },
   "impact": {
     "dashForce": 1040,
+    "dashDuration": 130,
+    "dashCooldown": 250,
+    "airDashCount": 2,
     "hitStop": 25,
-    "shake": 7
+    "shake": 7,
+    "landingImpact": 6
   }
 }
-

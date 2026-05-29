@@ -215,6 +215,7 @@ button {
 
 .control {
   display: block;
+  min-width: 0;
   margin: 13px 0;
 }
 
@@ -234,6 +235,7 @@ button {
 
 input[type="range"] {
   width: 100%;
+  min-width: 0;
   accent-color: var(--blue);
 }
 
@@ -260,6 +262,26 @@ input[type="range"] {
   height: auto;
 }
 
+.touch-controls {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: none;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.touch-controls button {
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 8px;
+  background: rgba(21, 35, 54, 0.78);
+  color: #fff;
+  font-weight: 800;
+  touch-action: none;
+}
+
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -283,6 +305,34 @@ input[type="range"] {
   margin-top: 7px;
   font-size: 24px;
   line-height: 1;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 14px 40px rgba(31, 48, 70, 0.08);
+}
+
+.profile-row div {
+  min-width: 0;
+}
+
+.profile-row span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-row meter {
+  width: 100%;
+  height: 12px;
 }
 
 #arc {
@@ -365,6 +415,10 @@ input[type="range"] {
     padding-right: 12px;
   }
 
+  .workspace {
+    overflow: hidden;
+  }
+
   .topbar {
     align-items: flex-start;
     flex-direction: column;
@@ -383,8 +437,25 @@ input[type="range"] {
     max-width: calc(100vw - 24px);
   }
 
+  .panel section,
+  .control,
+  .section-title,
+  .control span {
+    min-width: 0;
+  }
+
+  .section-title span,
+  .control strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .topbar-actions {
@@ -399,5 +470,9 @@ input[type="range"] {
 
   .utility-row button:last-child {
     grid-column: 1 / -1;
+  }
+
+  .touch-controls {
+    display: grid;
   }
 }

@@ -1,20 +1,29 @@
 {
-  "name": "heavy",
+  "schemaVersion": "1.1",
+  "profileName": "heavy",
   "movement": {
     "runSpeed": 310,
     "acceleration": 1450,
-    "friction": 2200
+    "friction": 2200,
+    "turnAcceleration": 2300
   },
   "air": {
     "jumpVelocity": 660,
     "gravity": 2300,
+    "jumpCutMultiplier": 2.5,
+    "fallGravityMultiplier": 2.15,
+    "maxFallSpeed": 1500,
+    "airControl": 0.38,
     "coyoteTime": 80,
     "jumpBuffer": 90
   },
   "impact": {
     "dashForce": 390,
+    "dashDuration": 180,
+    "dashCooldown": 620,
+    "airDashCount": 0,
     "hitStop": 120,
-    "shake": 15
+    "shake": 15,
+    "landingImpact": 16
   }
 }
-

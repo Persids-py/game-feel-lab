@@ -1,19 +1,29 @@
 {
-  "name": "moon",
+  "schemaVersion": "1.1",
+  "profileName": "moon",
   "movement": {
     "runSpeed": 300,
     "acceleration": 1200,
-    "friction": 950
+    "friction": 950,
+    "turnAcceleration": 1600
   },
   "air": {
     "jumpVelocity": 720,
     "gravity": 900,
+    "jumpCutMultiplier": 1.25,
+    "fallGravityMultiplier": 1.05,
+    "maxFallSpeed": 620,
+    "airControl": 1,
     "coyoteTime": 170,
     "jumpBuffer": 160
   },
   "impact": {
     "dashForce": 520,
+    "dashDuration": 260,
+    "dashCooldown": 580,
+    "airDashCount": 2,
     "hitStop": 35,
-    "shake": 4
+    "shake": 4,
+    "landingImpact": 2
   }
 }
