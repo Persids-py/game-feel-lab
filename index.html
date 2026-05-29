@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Game Feel Lab</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Game Feel Lab</h1>
+          <p>Balanced profile · live sandbox</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="resetBtn" class="icon-button" type="button" title="Reset simulation" aria-label="Reset simulation">
+            <span aria-hidden="true">R</span>
+          </button>
+          <button id="exportBtn" class="primary-button" type="button">Export JSON</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="panel control-panel" aria-label="Movement tuning controls">
+          <section>
+            <div class="section-title">
+              <h2>Movement</h2>
+              <span id="presetName">Balanced</span>
+            </div>
+            <div class="preset-row" role="group" aria-label="Presets">
+              <button class="preset active" data-preset="balanced" type="button">Balanced</button>
+              <button class="preset" data-preset="floaty" type="button">Floaty</button>
+              <button class="preset" data-preset="snappy" type="button">Snappy</button>
+            </div>
+            <label class="control">
+              <span>Run speed <strong data-value-for="runSpeed"></strong></span>
+              <input id="runSpeed" type="range" min="180" max="720" step="10" />
+            </label>
+            <label class="control">
+              <span>Acceleration <strong data-value-for="acceleration"></strong></span>
+              <input id="acceleration" type="range" min="600" max="5000" step="100" />
+            </label>
+            <label class="control">
+              <span>Friction <strong data-value-for="friction"></strong></span>
+              <input id="friction" type="range" min="400" max="6000" step="100" />
+            </label>
+          </section>
+
+          <section>
+            <div class="section-title">
+              <h2>Air</h2>
+            </div>
+            <label class="control">
+              <span>Jump velocity <strong data-value-for="jumpVelocity"></strong></span>
+              <input id="jumpVelocity" type="range" min="420" max="1100" step="10" />
+            </label>
+            <label class="control">
+              <span>Gravity <strong data-value-for="gravity"></strong></span>
+              <input id="gravity" type="range" min="900" max="3200" step="50" />
+            </label>
+            <label class="control">
+              <span>Coyote time <strong data-value-for="coyoteTime"></strong></span>
+              <input id="coyoteTime" type="range" min="0" max="180" step="10" />
+            </label>
+            <label class="control">
+              <span>Jump buffer <strong data-value-for="jumpBuffer"></strong></span>
+              <input id="jumpBuffer" type="range" min="0" max="180" step="10" />
+            </label>
+          </section>
+
+          <section>
+            <div class="section-title">
+              <h2>Impact</h2>
+            </div>
+            <label class="control">
+              <span>Dash force <strong data-value-for="dashForce"></strong></span>
+              <input id="dashForce" type="range" min="250" max="1100" step="10" />
+            </label>
+            <label class="control">
+              <span>Hit stop <strong data-value-for="hitStop"></strong></span>
+              <input id="hitStop" type="range" min="0" max="180" step="10" />
+            </label>
+            <label class="control">
+              <span>Shake <strong data-value-for="shake"></strong></span>
+              <input id="shake" type="range" min="0" max="20" step="1" />
+            </label>
+          </section>
+        </aside>
+
+        <section class="stage-column">
+          <div class="canvas-wrap">
+            <canvas id="stage" width="960" height="540" aria-label="Interactive movement sandbox"></canvas>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <span>Apex</span>
+              <strong id="apexStat">0 px</strong>
+            </div>
+            <div class="stat">
+              <span>Air time</span>
+              <strong id="airTimeStat">0 ms</strong>
+            </div>
+            <div class="stat">
+              <span>Dash distance</span>
+              <strong id="dashStat">0 px</strong>
+            </div>
+            <div class="stat">
+              <span>Feel score</span>
+              <strong id="feelStat">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel analysis-panel" aria-label="Analysis and export">
+          <section>
+            <div class="section-title">
+              <h2>Jump Arc</h2>
+              <span>preview</span>
+            </div>
+            <canvas id="arc" width="420" height="220" aria-label="Jump arc graph"></canvas>
+          </section>
+
+          <section>
+            <div class="section-title">
+              <h2>Export</h2>
+              <span>engine neutral</span>
+            </div>
+            <textarea id="exportText" spellcheck="false" aria-label="Exported tuning JSON"></textarea>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

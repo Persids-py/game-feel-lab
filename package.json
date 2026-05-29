@@ -1,0 +1,20 @@
+{
+  "name": "game-feel-lab",
+  "version": "0.1.0",
+  "description": "A static browser tool for tuning platformer movement, jump arcs, dash feel, hit stop, and camera shake.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/simulation.test.mjs",
+    "serve": "python -m http.server 8000"
+  },
+  "keywords": [
+    "gamedev",
+    "game-feel",
+    "platformer",
+    "balancing",
+    "prototyping"
+  ],
+  "license": "MIT",
+  "devDependencies": {}
+}
+

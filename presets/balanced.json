@@ -1,0 +1,20 @@
+{
+  "name": "balanced",
+  "movement": {
+    "runSpeed": 420,
+    "acceleration": 2600,
+    "friction": 3200
+  },
+  "air": {
+    "jumpVelocity": 720,
+    "gravity": 1850,
+    "coyoteTime": 90,
+    "jumpBuffer": 100
+  },
+  "impact": {
+    "dashForce": 620,
+    "hitStop": 70,
+    "shake": 8
+  }
+}
+
