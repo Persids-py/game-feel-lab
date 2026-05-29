@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import {
+  compareProfiles,
   createPlayer,
+  decodeProfile,
+  encodeProfile,
   estimateJump,
   exportConfig,
   feelScore,
+  parseImportedConfig,
   presets,
+  renderEngineSnippet,
   stepPlayer
 } from "../src/simulation.js";
 
@@ -77,6 +82,36 @@ function holdFrames(player, input, config, frames = 1) {
   assert.equal(exported.movement.runSpeed, presets.snappy.runSpeed);
   assert.equal(exported.air.gravity, presets.snappy.gravity);
   assert.equal(exported.impact.shake, presets.snappy.shake);
+}
+
+{
+  const imported = parseImportedConfig(JSON.stringify(exportConfig(presets.heavy)));
+
+  assert.equal(imported.runSpeed, presets.heavy.runSpeed);
+  assert.equal(imported.hitStop, presets.heavy.hitStop);
+}
+
+{
+  const encoded = encodeProfile(presets.speedrun);
+  const decoded = decodeProfile(encoded);
+
+  assert.equal(decoded.runSpeed, presets.speedrun.runSpeed);
+  assert.equal(decoded.jumpBuffer, presets.speedrun.jumpBuffer);
+}
+
+{
+  const diff = compareProfiles(presets.balanced, presets.snappy);
+
+  assert.ok(diff.dashReach > 0);
+  assert.ok(Number.isInteger(diff.feelScore));
+}
+
+{
+  const unity = renderEngineSnippet(presets.balanced, "unity");
+  const godot = renderEngineSnippet(presets.balanced, "godot");
+
+  assert.ok(unity.includes("GameFeelProfile"));
+  assert.ok(godot.includes("class_name GameFeelProfile"));
 }
 
 {

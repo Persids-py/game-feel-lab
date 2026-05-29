@@ -76,7 +76,10 @@ button {
 
 .icon-button,
 .primary-button,
-.preset {
+.preset,
+.format,
+.utility-row button,
+#shareBtn {
   height: 38px;
   border-radius: 8px;
   border: 1px solid var(--line);
@@ -101,6 +104,10 @@ button {
   background: var(--blue-dark);
 }
 
+#shareBtn {
+  padding: 0 14px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 300px minmax(540px, 1fr) 320px;
@@ -120,6 +127,7 @@ button {
 
 .panel {
   align-self: start;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -169,6 +177,42 @@ button {
   color: var(--blue-dark);
 }
 
+.format-row,
+.utility-row {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.format-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.format,
+.utility-row button {
+  height: 34px;
+  font-size: 13px;
+}
+
+.format.active {
+  border-color: rgba(47, 143, 91, 0.46);
+  background: rgba(47, 143, 91, 0.11);
+  color: #1e6840;
+}
+
+.utility-row {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 10px;
+}
+
+.status-text {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .control {
   display: block;
   margin: 13px 0;
@@ -202,6 +246,7 @@ input[type="range"] {
 
 .canvas-wrap {
   position: relative;
+  min-width: 0;
   overflow: hidden;
   background: #fff;
 }
@@ -209,6 +254,8 @@ input[type="range"] {
 #stage {
   display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   aspect-ratio: 16 / 9;
   height: auto;
 }
@@ -240,6 +287,8 @@ input[type="range"] {
 
 #arc {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -248,7 +297,7 @@ input[type="range"] {
 
 #exportText {
   width: 100%;
-  min-height: 308px;
+  min-height: 260px;
   resize: vertical;
   padding: 12px;
   border: 1px solid var(--line);
@@ -256,6 +305,32 @@ input[type="range"] {
   color: #172339;
   background: #f8fafc;
   font: 12px/1.45 "Cascadia Mono", Consolas, monospace;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 0;
+}
+
+.compare-grid div {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-strong);
+}
+
+.compare-grid dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.compare-grid dd {
+  margin: 6px 0 0;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 @media (max-width: 1180px) {
@@ -270,7 +345,7 @@ input[type="range"] {
   .analysis-panel {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .analysis-panel section {
@@ -279,6 +354,11 @@ input[type="range"] {
 }
 
 @media (max-width: 860px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
   .topbar,
   .workspace {
     padding-left: 12px;
@@ -292,10 +372,32 @@ input[type="range"] {
 
   .workspace,
   .analysis-panel {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace > *,
+  .analysis-panel > *,
+  .panel,
+  .canvas-wrap {
+    width: 100%;
+    max-width: calc(100vw - 24px);
   }
 
   .stats-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .topbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .preset-row,
+  .format-row,
+  .utility-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .utility-row button:last-child {
+    grid-column: 1 / -1;
   }
 }

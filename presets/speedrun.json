@@ -1,0 +1,20 @@
+{
+  "name": "speedrun",
+  "movement": {
+    "runSpeed": 690,
+    "acceleration": 5000,
+    "friction": 5600
+  },
+  "air": {
+    "jumpVelocity": 900,
+    "gravity": 2850,
+    "coyoteTime": 110,
+    "jumpBuffer": 120
+  },
+  "impact": {
+    "dashForce": 1040,
+    "hitStop": 25,
+    "shake": 7
+  }
+}
+

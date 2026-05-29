@@ -1,0 +1,19 @@
+{
+  "name": "moon",
+  "movement": {
+    "runSpeed": 300,
+    "acceleration": 1200,
+    "friction": 950
+  },
+  "air": {
+    "jumpVelocity": 720,
+    "gravity": 900,
+    "coyoteTime": 170,
+    "jumpBuffer": 160
+  },
+  "impact": {
+    "dashForce": 520,
+    "hitStop": 35,
+    "shake": 4
+  }
+}

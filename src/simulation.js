@@ -1,3 +1,16 @@
+export const controlKeys = [
+  "runSpeed",
+  "acceleration",
+  "friction",
+  "jumpVelocity",
+  "gravity",
+  "coyoteTime",
+  "jumpBuffer",
+  "dashForce",
+  "hitStop",
+  "shake",
+];
+
 export const presets = {
   balanced: {
     runSpeed: 420,
@@ -35,6 +48,55 @@ export const presets = {
     hitStop: 45,
     shake: 13,
   },
+  heavy: {
+    runSpeed: 310,
+    acceleration: 1450,
+    friction: 2200,
+    jumpVelocity: 660,
+    gravity: 2300,
+    coyoteTime: 80,
+    jumpBuffer: 90,
+    dashForce: 390,
+    hitStop: 120,
+    shake: 15,
+  },
+  speedrun: {
+    runSpeed: 690,
+    acceleration: 5000,
+    friction: 5600,
+    jumpVelocity: 900,
+    gravity: 2850,
+    coyoteTime: 110,
+    jumpBuffer: 120,
+    dashForce: 1040,
+    hitStop: 25,
+    shake: 7,
+  },
+  moon: {
+    runSpeed: 300,
+    acceleration: 1200,
+    friction: 950,
+    jumpVelocity: 720,
+    gravity: 900,
+    coyoteTime: 170,
+    jumpBuffer: 160,
+    dashForce: 520,
+    hitStop: 35,
+    shake: 4,
+  },
+};
+
+export const controlRanges = {
+  runSpeed: { min: 180, max: 720, step: 10 },
+  acceleration: { min: 600, max: 5000, step: 100 },
+  friction: { min: 400, max: 6000, step: 100 },
+  jumpVelocity: { min: 420, max: 1100, step: 10 },
+  gravity: { min: 900, max: 3200, step: 50 },
+  coyoteTime: { min: 0, max: 180, step: 10 },
+  jumpBuffer: { min: 0, max: 180, step: 10 },
+  dashForce: { min: 250, max: 1100, step: 10 },
+  hitStop: { min: 0, max: 180, step: 10 },
+  shake: { min: 0, max: 20, step: 1 },
 };
 
 export function createPlayer() {
@@ -161,6 +223,7 @@ export function feelScore(config) {
 }
 
 export function exportConfig(config) {
+  const normalized = normalizeConfig(config);
   return {
     name: "custom-feel-profile",
     units: {
@@ -168,22 +231,127 @@ export function exportConfig(config) {
       time: "milliseconds",
     },
     movement: {
-      runSpeed: config.runSpeed,
-      acceleration: config.acceleration,
-      friction: config.friction,
+      runSpeed: normalized.runSpeed,
+      acceleration: normalized.acceleration,
+      friction: normalized.friction,
     },
     air: {
-      jumpVelocity: config.jumpVelocity,
-      gravity: config.gravity,
-      coyoteTime: config.coyoteTime,
-      jumpBuffer: config.jumpBuffer,
+      jumpVelocity: normalized.jumpVelocity,
+      gravity: normalized.gravity,
+      coyoteTime: normalized.coyoteTime,
+      jumpBuffer: normalized.jumpBuffer,
     },
     impact: {
-      dashForce: config.dashForce,
-      hitStop: config.hitStop,
-      shake: config.shake,
+      dashForce: normalized.dashForce,
+      hitStop: normalized.hitStop,
+      shake: normalized.shake,
     },
   };
+}
+
+export function normalizeConfig(input) {
+  const merged = {
+    ...presets.balanced,
+    ...flattenConfig(input),
+  };
+
+  const normalized = {};
+  for (const key of controlKeys) {
+    const range = controlRanges[key];
+    const numeric = Number.isFinite(Number(merged[key])) ? Number(merged[key]) : presets.balanced[key];
+    const stepped = Math.round(numeric / range.step) * range.step;
+    normalized[key] = clamp(stepped, range.min, range.max);
+  }
+  return normalized;
+}
+
+export function flattenConfig(input) {
+  if (!input || typeof input !== "object") return {};
+  return {
+    ...pickControls(input),
+    ...pickControls(input.movement),
+    ...pickControls(input.air),
+    ...pickControls(input.impact),
+    ...pickControls(input.combatFeel),
+  };
+}
+
+export function parseImportedConfig(text) {
+  const parsed = JSON.parse(text);
+  return normalizeConfig(parsed);
+}
+
+export function encodeProfile(config) {
+  const normalized = normalizeConfig(config);
+  const params = new URLSearchParams();
+  for (const [shortKey, key] of Object.entries(profileParamKeys)) {
+    params.set(shortKey, String(normalized[key]));
+  }
+  return params.toString();
+}
+
+export function decodeProfile(value) {
+  const params = value instanceof URLSearchParams ? value : new URLSearchParams(value);
+  const flat = {};
+  for (const [shortKey, key] of Object.entries(profileParamKeys)) {
+    if (params.has(shortKey)) {
+      flat[key] = Number(params.get(shortKey));
+    }
+  }
+  return Object.keys(flat).length ? normalizeConfig(flat) : null;
+}
+
+export function compareProfiles(left, right) {
+  const leftConfig = normalizeConfig(left);
+  const rightConfig = normalizeConfig(right);
+  const leftJump = estimateJump(leftConfig);
+  const rightJump = estimateJump(rightConfig);
+  return {
+    apexHeight: Math.round(rightJump.apexHeight - leftJump.apexHeight),
+    airTime: Math.round((rightJump.airTime - leftJump.airTime) * 1000),
+    dashReach: Math.round(rightConfig.dashForce * 0.42 - leftConfig.dashForce * 0.42),
+    feelScore: feelScore(rightConfig) - feelScore(leftConfig),
+  };
+}
+
+export function renderEngineSnippet(config, engine) {
+  const exported = exportConfig(config);
+  if (engine === "unity") {
+    return [
+      "var feel = new GameFeelProfile {",
+      `    RunSpeed = ${exported.movement.runSpeed}f,`,
+      `    Acceleration = ${exported.movement.acceleration}f,`,
+      `    Friction = ${exported.movement.friction}f,`,
+      `    JumpVelocity = ${exported.air.jumpVelocity}f,`,
+      `    Gravity = ${exported.air.gravity}f,`,
+      `    CoyoteTimeMs = ${exported.air.coyoteTime},`,
+      `    JumpBufferMs = ${exported.air.jumpBuffer},`,
+      `    DashForce = ${exported.impact.dashForce}f,`,
+      `    HitStopMs = ${exported.impact.hitStop},`,
+      `    ShakePixels = ${exported.impact.shake}`,
+      "};",
+    ].join("\n");
+  }
+
+  if (engine === "godot") {
+    return [
+      "extends Resource",
+      "class_name GameFeelProfile",
+      "",
+      `@export var run_speed := ${exported.movement.runSpeed}.0`,
+      `@export var acceleration := ${exported.movement.acceleration}.0`,
+      `@export var friction := ${exported.movement.friction}.0`,
+      `@export var jump_velocity := ${exported.air.jumpVelocity}.0`,
+      `@export var gravity := ${exported.air.gravity}.0`,
+      `@export var coyote_time_ms := ${exported.air.coyoteTime}`,
+      `@export var jump_buffer_ms := ${exported.air.jumpBuffer}`,
+      `@export var dash_force := ${exported.impact.dashForce}.0`,
+      `@export var hit_stop_ms := ${exported.impact.hitStop}`,
+      `@export var shake_pixels := ${exported.impact.shake}`,
+    ].join("\n");
+  }
+
+  return JSON.stringify(exported, null, 2);
 }
 
 function approach(value, target, amount) {
@@ -200,3 +368,26 @@ function normalize(value, min, max) {
   return clamp((value - min) / (max - min), 0, 1);
 }
 
+function pickControls(input) {
+  if (!input || typeof input !== "object") return {};
+  const picked = {};
+  for (const key of controlKeys) {
+    if (Object.hasOwn(input, key)) {
+      picked[key] = input[key];
+    }
+  }
+  return picked;
+}
+
+const profileParamKeys = {
+  rs: "runSpeed",
+  ac: "acceleration",
+  fr: "friction",
+  jv: "jumpVelocity",
+  gr: "gravity",
+  ct: "coyoteTime",
+  jb: "jumpBuffer",
+  df: "dashForce",
+  hs: "hitStop",
+  sh: "shake",
+};

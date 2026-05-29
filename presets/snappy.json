@@ -1,0 +1,20 @@
+{
+  "name": "snappy",
+  "movement": {
+    "runSpeed": 560,
+    "acceleration": 4200,
+    "friction": 5000
+  },
+  "air": {
+    "jumpVelocity": 840,
+    "gravity": 2600,
+    "coyoteTime": 60,
+    "jumpBuffer": 70
+  },
+  "impact": {
+    "dashForce": 860,
+    "hitStop": 45,
+    "shake": 13
+  }
+}
+

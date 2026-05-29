@@ -1,0 +1,20 @@
+{
+  "name": "heavy",
+  "movement": {
+    "runSpeed": 310,
+    "acceleration": 1450,
+    "friction": 2200
+  },
+  "air": {
+    "jumpVelocity": 660,
+    "gravity": 2300,
+    "coyoteTime": 80,
+    "jumpBuffer": 90
+  },
+  "impact": {
+    "dashForce": 390,
+    "hitStop": 120,
+    "shake": 15
+  }
+}
+

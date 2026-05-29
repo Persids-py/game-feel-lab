@@ -12,7 +12,10 @@ The exported JSON is engine-neutral, so it can be copied into Unity, Godot, Unre
 - Tunable run speed, acceleration, friction, gravity, jump velocity, coyote time, and jump buffering.
 - Dash, hit stop, and screen shake controls for action feel.
 - Jump arc preview and gameplay metrics.
-- Engine-neutral JSON export.
+- Engine-neutral JSON import/export.
+- Unity and Godot snippet export.
+- Shareable profile URLs.
+- A/B comparison slots for tuning passes.
 - Runs as a static site with no build step.
 
 ## Controls
@@ -21,6 +24,14 @@ The exported JSON is engine-neutral, so it can be copied into Unity, Godot, Unre
 - `Space`: jump.
 - `Shift`: dash.
 - `J`: trigger hit stop and shake.
+
+## Workflow
+
+- Use the preset buttons to start from a known feel profile.
+- Switch export format between JSON, Unity, and Godot.
+- Paste an exported JSON profile into the export box and press `Import JSON`.
+- Press `Share URL` to encode the current profile into the page URL.
+- Press `Save A` and `Save B` to compare two tuning passes.
 
 ## Run Locally
 
@@ -55,6 +66,10 @@ src/
   styles.css
 presets/
   balanced.json
+  heavy.json
+  moon.json
+  snappy.json
+  speedrun.json
 tests/
   simulation.test.mjs
 ```
@@ -88,8 +103,8 @@ tests/
 - Import JSON profiles.
 - Timeline view for input buffering and coyote windows.
 - More player archetypes, including top-down and twin-stick movement.
-- Side-by-side comparison for two tuning profiles.
-- Shareable URLs with encoded settings.
+- Direct export templates for more engines.
+- Local profile library with named saved profiles.
 
 ## Contributing
 

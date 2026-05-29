@@ -17,6 +17,7 @@
           <button id="resetBtn" class="icon-button" type="button" title="Reset simulation" aria-label="Reset simulation">
             <span aria-hidden="true">R</span>
           </button>
+          <button id="shareBtn" type="button">Share URL</button>
           <button id="exportBtn" class="primary-button" type="button">Export JSON</button>
         </div>
       </header>
@@ -32,6 +33,9 @@
               <button class="preset active" data-preset="balanced" type="button">Balanced</button>
               <button class="preset" data-preset="floaty" type="button">Floaty</button>
               <button class="preset" data-preset="snappy" type="button">Snappy</button>
+              <button class="preset" data-preset="heavy" type="button">Heavy</button>
+              <button class="preset" data-preset="speedrun" type="button">Speedrun</button>
+              <button class="preset" data-preset="moon" type="button">Moon</button>
             </div>
             <label class="control">
               <span>Run speed <strong data-value-for="runSpeed"></strong></span>
@@ -125,9 +129,45 @@
           <section>
             <div class="section-title">
               <h2>Export</h2>
-              <span>engine neutral</span>
+              <span id="exportModeLabel">JSON</span>
+            </div>
+            <div class="format-row" role="group" aria-label="Export format">
+              <button class="format active" data-format="json" type="button">JSON</button>
+              <button class="format" data-format="unity" type="button">Unity</button>
+              <button class="format" data-format="godot" type="button">Godot</button>
             </div>
             <textarea id="exportText" spellcheck="false" aria-label="Exported tuning JSON"></textarea>
+            <div class="utility-row">
+              <button id="importBtn" type="button">Import JSON</button>
+              <button id="saveABtn" type="button">Save A</button>
+              <button id="saveBBtn" type="button">Save B</button>
+            </div>
+            <p id="statusText" class="status-text" aria-live="polite">Ready</p>
+          </section>
+
+          <section>
+            <div class="section-title">
+              <h2>A/B Compare</h2>
+              <span>right minus left</span>
+            </div>
+            <dl class="compare-grid">
+              <div>
+                <dt>Apex</dt>
+                <dd id="compareApex">0 px</dd>
+              </div>
+              <div>
+                <dt>Air</dt>
+                <dd id="compareAir">0 ms</dd>
+              </div>
+              <div>
+                <dt>Dash</dt>
+                <dd id="compareDash">0 px</dd>
+              </div>
+              <div>
+                <dt>Score</dt>
+                <dd id="compareScore">0</dd>
+              </div>
+            </dl>
           </section>
         </aside>
       </main>

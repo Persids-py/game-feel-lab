@@ -1,4 +1,17 @@
-import { createPlayer, estimateJump, exportConfig, feelScore, presets, stepPlayer } from "./simulation.js";
+import {
+  compareProfiles,
+  controlKeys,
+  createPlayer,
+  decodeProfile,
+  encodeProfile,
+  estimateJump,
+  feelScore,
+  normalizeConfig,
+  parseImportedConfig,
+  presets,
+  renderEngineSnippet,
+  stepPlayer,
+} from "./simulation.js";
 
 const config = { ...presets.balanced };
 const player = createPlayer();
@@ -8,6 +21,9 @@ const arc = document.querySelector("#arc");
 const arcCtx = arc.getContext("2d");
 const exportText = document.querySelector("#exportText");
 const presetName = document.querySelector("#presetName");
+const statusText = document.querySelector("#statusText");
+const exportModeLabel = document.querySelector("#exportModeLabel");
+const subtitle = document.querySelector(".topbar p");
 const input = {
   left: false,
   right: false,
@@ -16,19 +32,6 @@ const input = {
   hitPressed: false,
 };
 
-const controls = [
-  "runSpeed",
-  "acceleration",
-  "friction",
-  "jumpVelocity",
-  "gravity",
-  "coyoteTime",
-  "jumpBuffer",
-  "dashForce",
-  "hitStop",
-  "shake",
-];
-
 const world = {
   width: stage.width,
   height: stage.height,
@@ -36,9 +39,12 @@ const world = {
 };
 
 let activePreset = "balanced";
+let outputFormat = "json";
 let lastTime = performance.now();
+let compareA = { ...presets.balanced };
+let compareB = { ...presets.snappy };
 
-for (const key of controls) {
+for (const key of controlKeys) {
   const inputElement = document.querySelector(`#${key}`);
   inputElement.value = config[key];
   inputElement.addEventListener("input", () => {
@@ -50,28 +56,67 @@ for (const key of controls) {
 
 for (const button of document.querySelectorAll(".preset")) {
   button.addEventListener("click", () => {
-    activePreset = button.dataset.preset;
-    Object.assign(config, presets[activePreset]);
-    Object.assign(player, createPlayer());
-    updateControls();
+    applyConfig(presets[button.dataset.preset], button.dataset.preset);
+    setStatus(`${titleCase(button.dataset.preset)} preset loaded`);
   });
 }
 
+for (const button of document.querySelectorAll(".format")) {
+  button.addEventListener("click", () => {
+    outputFormat = button.dataset.format;
+    updateControls();
+    setStatus(`${outputFormatLabel(outputFormat)} export ready`);
+  });
+}
+
+const sharedConfig = decodeProfile(window.location.search);
+if (sharedConfig) {
+  applyConfig(sharedConfig, "shared");
+  setStatus("Shared profile loaded");
+}
+
 document.querySelector("#resetBtn").addEventListener("click", () => {
-  Object.assign(player, createPlayer());
+  applyConfig(presets.balanced, "balanced");
+  setStatus("Balanced preset restored");
+});
+
+document.querySelector("#shareBtn").addEventListener("click", async () => {
+  const url = `${window.location.origin}${window.location.pathname}?${encodeProfile(config)}`;
+  window.history.replaceState(null, "", url);
+  await copyText(url);
+  setStatus("Share URL copied");
+});
+
+document.querySelector("#importBtn").addEventListener("click", () => {
+  try {
+    outputFormat = "json";
+    applyConfig(parseImportedConfig(exportText.value), "imported");
+    setStatus("Imported JSON profile");
+  } catch {
+    setStatus("Paste a valid exported JSON profile first");
+  }
+});
+
+document.querySelector("#saveABtn").addEventListener("click", () => {
+  compareA = normalizeConfig(config);
+  updateCompare();
+  setStatus("Saved current profile as A");
+});
+
+document.querySelector("#saveBBtn").addEventListener("click", () => {
+  compareB = normalizeConfig(config);
+  updateCompare();
+  setStatus("Saved current profile as B");
 });
 
 document.querySelector("#exportBtn").addEventListener("click", async () => {
   exportText.select();
-  try {
-    await navigator.clipboard.writeText(exportText.value);
-    document.querySelector("#exportBtn").textContent = "Copied";
-    window.setTimeout(() => {
-      document.querySelector("#exportBtn").textContent = "Export JSON";
-    }, 900);
-  } catch {
-    document.querySelector("#exportBtn").textContent = "Select JSON";
-  }
+  await copyText(exportText.value);
+  const label = outputFormat === "json" ? "Export JSON" : `Copy ${titleCase(outputFormat)}`;
+  document.querySelector("#exportBtn").textContent = "Copied";
+  window.setTimeout(() => {
+    document.querySelector("#exportBtn").textContent = label;
+  }, 900);
 });
 
 window.addEventListener("keydown", (event) => {
@@ -88,17 +133,35 @@ window.addEventListener("keyup", (event) => {
   if (event.code === "KeyD" || event.code === "ArrowRight") input.right = false;
 });
 
+function applyConfig(nextConfig, presetLabel = "custom") {
+  Object.assign(config, normalizeConfig(nextConfig));
+  activePreset = presetLabel;
+  Object.assign(player, createPlayer());
+  updateControls();
+}
+
 function updateControls() {
-  for (const key of controls) {
+  for (const key of controlKeys) {
     document.querySelector(`#${key}`).value = config[key];
     document.querySelector(`[data-value-for="${key}"]`).textContent = formatValue(key, config[key]);
   }
+
   presetName.textContent = activePreset === "custom" ? "Custom" : titleCase(activePreset);
+  subtitle.textContent = `${presetName.textContent} profile · ${outputFormatLabel(outputFormat)} export`;
+
   for (const button of document.querySelectorAll(".preset")) {
     button.classList.toggle("active", button.dataset.preset === activePreset);
   }
-  exportText.value = JSON.stringify(exportConfig(config), null, 2);
+  for (const button of document.querySelectorAll(".format")) {
+    button.classList.toggle("active", button.dataset.format === outputFormat);
+  }
+
+  exportModeLabel.textContent = outputFormatLabel(outputFormat);
+  document.querySelector("#exportBtn").textContent =
+    outputFormat === "json" ? "Export JSON" : `Copy ${titleCase(outputFormat)}`;
+  exportText.value = renderEngineSnippet(config, outputFormat);
   drawArc();
+  updateCompare();
 }
 
 function loop(now) {
@@ -214,6 +277,7 @@ function drawPlayer() {
 
 function drawArc() {
   const data = estimateJump(config);
+  const comparison = estimateJump(compareB);
   arcCtx.clearRect(0, 0, arc.width, arc.height);
   arcCtx.fillStyle = "#f6f8fb";
   arcCtx.fillRect(0, 0, arc.width, arc.height);
@@ -233,21 +297,26 @@ function drawArc() {
     arcCtx.stroke();
   }
 
-  arcCtx.strokeStyle = "#276ef1";
-  arcCtx.lineWidth = 4;
+  drawArcLine(comparison.points, "rgba(248, 95, 85, 0.42)", 2);
+  drawArcLine(data.points, "#276ef1", 4);
+
+  arcCtx.fillStyle = "#152336";
+  arcCtx.font = "600 13px system-ui";
+  arcCtx.fillText(`${Math.round(data.apexHeight)} px apex`, 26, 24);
+  arcCtx.fillText(`${Math.round(data.airTime * 1000)} ms air`, 26, 44);
+}
+
+function drawArcLine(points, color, width) {
+  arcCtx.strokeStyle = color;
+  arcCtx.lineWidth = width;
   arcCtx.beginPath();
-  data.points.forEach((point, index) => {
+  points.forEach((point, index) => {
     const x = 34 + point.x * 185;
     const y = arc.height - 32 - (378 - point.y) * 0.58;
     if (index === 0) arcCtx.moveTo(x, y);
     else arcCtx.lineTo(x, y);
   });
   arcCtx.stroke();
-
-  arcCtx.fillStyle = "#152336";
-  arcCtx.font = "600 13px system-ui";
-  arcCtx.fillText(`${Math.round(data.apexHeight)} px apex`, 26, 24);
-  arcCtx.fillText(`${Math.round(data.airTime * 1000)} ms air`, 26, 44);
 }
 
 function updateStats() {
@@ -258,6 +327,14 @@ function updateStats() {
   document.querySelector("#feelStat").textContent = feelScore(config);
 }
 
+function updateCompare() {
+  const diff = compareProfiles(compareA, compareB);
+  document.querySelector("#compareApex").textContent = signed(diff.apexHeight, " px");
+  document.querySelector("#compareAir").textContent = signed(diff.airTime, " ms");
+  document.querySelector("#compareDash").textContent = signed(diff.dashReach, " px");
+  document.querySelector("#compareScore").textContent = signed(diff.feelScore, "");
+}
+
 function formatValue(key, value) {
   if (key === "coyoteTime" || key === "jumpBuffer" || key === "hitStop") return `${value} ms`;
   if (key === "shake") return `${value}px`;
@@ -266,6 +343,27 @@ function formatValue(key, value) {
 
 function titleCase(value) {
   return value.slice(0, 1).toUpperCase() + value.slice(1);
+}
+
+function outputFormatLabel(value) {
+  if (value === "json") return "JSON";
+  return titleCase(value);
+}
+
+function signed(value, suffix) {
+  return `${value > 0 ? "+" : ""}${value}${suffix}`;
+}
+
+function setStatus(message) {
+  statusText.textContent = message;
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    exportText.focus();
+  }
 }
 
 function roundRect(context, x, y, width, height, radius) {
@@ -280,4 +378,3 @@ function roundRect(context, x, y, width, height, radius) {
 
 updateControls();
 requestAnimationFrame(loop);
-
