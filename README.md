@@ -4,7 +4,7 @@ Game Feel Lab is a browser-based tuning tool for game developers working on plat
 
 The exported JSON is engine-neutral, so it can be copied into Unity, Godot, Unreal, custom engines, or design docs.
 
-![Game Feel Lab screenshot](artifacts/game-feel-lab.png)
+![Game Feel Lab screenshot](docs/game-feel-lab.png)
 
 ## Features
 
