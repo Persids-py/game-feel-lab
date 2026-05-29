@@ -33,6 +33,16 @@ const input = {
   dashPressed: false,
   hitPressed: false,
 };
+const gameKeyCodes = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "KeyA",
+  "KeyD",
+  "KeyJ",
+  "ShiftLeft",
+  "ShiftRight",
+  "Space",
+]);
 
 const world = {
   width: stage.width,
@@ -124,6 +134,7 @@ document.querySelector("#exportBtn").addEventListener("click", async () => {
 });
 
 window.addEventListener("keydown", (event) => {
+  if (shouldCaptureGameKey(event)) event.preventDefault();
   if (event.repeat) return;
   if (event.code === "KeyA" || event.code === "ArrowLeft") input.left = true;
   if (event.code === "KeyD" || event.code === "ArrowRight") input.right = true;
@@ -136,6 +147,7 @@ window.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("keyup", (event) => {
+  if (shouldCaptureGameKey(event)) event.preventDefault();
   if (event.code === "KeyA" || event.code === "ArrowLeft") input.left = false;
   if (event.code === "KeyD" || event.code === "ArrowRight") input.right = false;
   if (event.code === "Space") input.jumpHeld = false;
@@ -392,6 +404,20 @@ function formatValue(key, value) {
 
 function titleCase(value) {
   return value.slice(0, 1).toUpperCase() + value.slice(1);
+}
+
+function shouldCaptureGameKey(event) {
+  if (!gameKeyCodes.has(event.code) || event.altKey || event.ctrlKey || event.metaKey) return false;
+  const target = event.target;
+  const tagName = target?.tagName;
+  return !(
+    target?.isContentEditable ||
+    tagName === "INPUT" ||
+    tagName === "TEXTAREA" ||
+    tagName === "SELECT" ||
+    tagName === "BUTTON" ||
+    tagName === "A"
+  );
 }
 
 function outputFormatLabel(value) {
